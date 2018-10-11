@@ -150,6 +150,12 @@ export class CellSelection extends Selection {
     return new CellSelection($anchorCell, $headCell)
   }
 
+  cellCount() {
+    let table = this.$anchorCell.node(-1), map = TableMap.get(table), start = this.$anchorCell.start(-1)
+    let cells = map.cellsInRect(map.rectBetween(this.$anchorCell.pos - start, this.$headCell.pos - start))
+    return cells.length
+  }
+
   // :: () → bool
   // True if this selection goes all the way from the left to the
   // right of the table.
@@ -157,10 +163,14 @@ export class CellSelection extends Selection {
     let map = TableMap.get(this.$anchorCell.node(-1)), start = this.$anchorCell.start(-1)
     let anchorLeft = map.colCount(this.$anchorCell.pos - start),
         headLeft = map.colCount(this.$headCell.pos - start)
-    if (Math.min(anchorLeft, headLeft) > 0) return false
+
+    // If $anchorCell has no node before and its left most point is greater than 1
+    // it may be caused by a rowspan in the first column.
+    if (Math.min(anchorLeft, headLeft) > 0 && this.$anchorCell.nodeBefore) return false
     let anchorRight = anchorLeft + this.$anchorCell.nodeAfter.attrs.colspan,
         headRight = headLeft + this.$headCell.nodeAfter.attrs.colspan
-    return Math.max(anchorRight, headRight) == map.width
+
+    return Math.max(anchorRight, headRight) == map.width || this.cellCount() === this.$headCell.node().childCount;
   }
 
   eq(other) {

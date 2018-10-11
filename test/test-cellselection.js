@@ -73,3 +73,35 @@ describe("CellSelection.content", () => {
      ist(selectionFor(table(tr(c11, cAnchor, c11), tr(td({colspan: 3, colwidth: [100, 200, 300]}, p("x"))), tr(c11, cHead, c11))).content(),
          slice(table(tr(c11), tr(td({colwidth: [200]}, p())), tr(c11))), eq))
 })
+
+describe("CellSelection.isRowSelection", () => {
+  it("will return true when first col contains rowspan", () => {
+    let t = doc(table(tr(/* 2*/ c(1, 2), /* 7*/ cEmpty, /*11*/ cEmpty),
+                  tr(/*17*/ cEmpty, /*21*/ cEmpty),
+                  tr(/*27*/ cEmpty, /*31*/ cEmpty, /*35*/ cEmpty)));
+
+    let s = CellSelection.create(t, 17, 21);
+
+    ist(s.isRowSelection(), true);
+  })
+
+  it("will return true when the first and last cols contain rowspans", () => {
+    let t = doc(table(tr(/* 2*/ c(1, 2), /* 7*/ cEmpty, /*11*/ c(1, 2)),
+                  tr(/*18*/ cEmpty),
+                  tr(/*24*/ cEmpty, /*27*/ cEmpty, /*32*/ cEmpty)));
+
+    let s = CellSelection.create(t, 18, 18);
+
+    ist(s.isRowSelection(), true);
+  })
+
+  it("will return true with multiple rowspans", () => {
+    let t = doc(table(tr(/* 2*/ c(1, 3), /* 7*/ cEmpty, /* 11*/ c(1, 3), /*16*/ cEmpty),
+                  tr(/*22*/ cEmpty, /* 26*/cEmpty),
+                  tr(/*32*/ cEmpty, /*36*/ cEmpty)));
+
+    let s = CellSelection.create(t, 22, 26);
+
+    ist(s.isRowSelection(), true);
+  })
+});
